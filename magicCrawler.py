@@ -1,46 +1,65 @@
 import urllib.request
 import json
 import requests
+import time
+import sqlite3
 
-baseurl = 'https://api.scryfall.com/cards/'
-
-# Search for cardname:
-# options = 'named?exact='
-# cardname = 'marchesa the black rose'
-# url = (baseurl + options + cardname).encode()
-
-options = 'search?order=set&q=t:creature t:legend&dir=desc'
-url = (baseurl + options).encode()
-
-# I am just looking through the first page
-# add logic for second page
-print('request url: ', url)
-response = requests.get(url)
-# print(type(response))
-# print(response.text)
-if response.status_code == 200:
-    jcards = response.json()
-    printedcards = 0
-    # print(jcards)
-    print('------------------')
-    for bla in jcards['data']:
-        print(bla.get('name'))
+def pullPage(url):
+    print('request url: ', url)
+    response = requests.get(url)
+    # print(type(response))
+    # print(response.text)
+    if response.status_code == 200:
+        jcards = response.json()
+        printedcards = 0
+        # print(jcards)
+        for bla in jcards:
+            if bla == 'data': continue
+            print(bla, ': ', jcards[bla])
         print('------------------')
-        printedcards += 1
 
-    print('I found: ' , jcards['total_cards'],' total cards')
-    print('cards printed: ', printedcards)
-else:
-    print(response)
+        for bla in jcards['data']:
+            print(bla.get('name'))
+            print('------------------')
+            printedcards += 1
+
+        print('I found: ' , jcards['total_cards'],' total cards')
+        print('cards printed: ', printedcards)
+        
+        return jcards.get(('next_page'), None)
+        
+    else:
+        print(response)
+        return None
 
 
+def writeDataToDB(data):
+    dbPath = ''
+    conn = sqlite3.connect(dbPath)
+    cur = conn.cursor()
+    
+    #write data to database
+    
+def main(self):
 
-# print('name', jcards['name'])
-# print('cmc', jcards['cmc'])
-# print('mana_cost', jcards['mana_cost'])
-# print('image_uris', jcards['image_uris']['normal'])
+    baseurl = 'https://api.scryfall.com/cards/'
 
+    # Search for cardname:
+    # options = 'named?exact='
+    # cardname = 'marchesa the black rose'
+    # url = (baseurl + options + cardname).encode()
 
-# user_agent = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7'
-# headers={'User-Agent':user_agent,} 
-# request = urllib.request.Request(url, None, headers)
+    options = 'search?order=set&q=t:creature t:legend&dir=desc'
+    url = (baseurl + options).encode()
+
+    count = 0
+
+    while url is not None:
+        
+        url = pullPage(url)
+        count += 1
+        print('current count ', count)
+        time.sleep(0.2)
+        
+if __name__ == "__main__":
+    main()
