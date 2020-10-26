@@ -74,6 +74,8 @@ def addCardToDB(card):
     image_png = image_uris.get('png')
     print('image_png: ', image_png, '(type: ', type(image_png),')')
     
+    # Add logic that tells me if card already exists, so that i can skip it -> Find it in db and then skip
+    
     cur.execute("""
     --sql
     INSERT OR IGNORE INTO Cards (name, colors, mana_cost, color_identity, image_png) VALUES(?, ?, ?, ?, ?);
